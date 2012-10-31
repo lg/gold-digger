@@ -19,7 +19,7 @@
 
 chrome.tabs.onUpdated.addListener (tabId, changeInfo, tab) ->
   if changeInfo.status == "complete" && /freeflight\.html/i.test(tab.url)
-    chrome.tabs.executeScript tabId, {file: "injected.js"}
+    chrome.tabs.executeScript tabId, {file: "proxy.js"}
 
 chrome.extension.onMessage.addListener (request, sender, sendResponse) ->
   if request.command == "ping"
