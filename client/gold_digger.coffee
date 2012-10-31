@@ -2,9 +2,6 @@
 # TODO: double check that removeeventlistener actually works
 
 @GoldDigger = class GoldDigger
-  WAIT_TIMEOUT = 3000
-  WAIT_CHECK_INTERVAL = 500
-  MAX_WAIT_CHECKS = 5
   PLUGIN_CHECK_TIMEOUT = 1000
 
   @sendCommand: (command, args, responseCallback) ->
@@ -23,11 +20,16 @@
     GoldDigger.sendCommand "ping", null, (result) ->
       clearTimeout timeout
       resultCb if result == "pong" then true else false
-  
-  @createScraper: (url, pageIdCb) ->
-    GoldDigger.sendCommand "createScraper", {url: url}, (pageId) ->
-      pageIdCb pageId
 
+  @createScraper: (url, scraperCb) ->
+    GoldDigger.sendCommand "createScraper", {url: url}, (pageId) ->
+      scraperCb(new GoldDiggerScraper(pageId))
+
+@GoldDiggerScraper = class GoldDiggerScraper
+  WAIT_TIMEOUT = 3000
+  WAIT_CHECK_INTERVAL = 500
+  MAX_WAIT_CHECKS = 5
+  
   constructor: (@goldDiggerPageId) ->
 
   exec: (code, resultCb) ->
@@ -59,15 +61,15 @@
   setChecked: (selector, trueFalse, doneCb) ->
     this.exec "document.querySelector('#{selector}').checked = #{trueFalse}", ->
       doneCb()
-  
+
   setValue: (selector, value, doneCb) ->
     this.exec "document.querySelector('#{selector}').value = \"#{value}\"", ->
       doneCb()
-  
+
   click: (selector, doneCb) ->
     this.exec "document.querySelector('#{selector}').click()", ->
       doneCb()
-  
+
   getDOM: (selector, resultCb) ->
     this.exec "document.querySelector('#{selector}').innerHTML", (elementHTML) ->
       doc = document.implementation.createHTMLDocument ""

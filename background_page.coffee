@@ -26,7 +26,7 @@ chrome.extension.onMessage.addListener (request, sender, sendResponse) ->
     sendResponse "pong"
   else if request.command == "exec"
     GoldDiggerScraper.exec request.args.pageId, request.args.code, (result) ->
-      sendResponse result
+      sendResponse if result == undefined || result == null then {} else result
     return true
   else if request.command == "createScraper"
     GoldDiggerScraper.createScraper request.args.url, (result) ->
