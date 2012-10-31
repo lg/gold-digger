@@ -1,0 +1,17 @@
+{
+  "name": "Gold Digger",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Gold Digger",
+  
+  "background": {
+    "page": "background.html"
+  },
+  
+  "permissions": [
+    "tabs",
+    "http://*/*",
+    "https://*/*",
+    "file://*/*"
+  ],
+}
