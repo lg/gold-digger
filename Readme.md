@@ -30,6 +30,13 @@ Possible uses for GoldDigger-powered sites
 - Embed your iPhone app's rating and comments automatically on your page
 
 
+Todo
+----
+
+- Add ability for sites to request permission to scrape (instead of needing devs to distribute their own versions of this plugin)
+- Secure password store so sites dont need access to sensitive user credentials
+
+
 Installation
 ------------
 
