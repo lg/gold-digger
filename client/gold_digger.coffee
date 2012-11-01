@@ -4,12 +4,16 @@
 @GoldDigger = class GoldDigger
   PLUGIN_CHECK_TIMEOUT = 1000
 
-  @sendCommand: (command, args, responseCallback) ->
+  @sendCommand: (command, args, responseCb, errorCb) ->
+    console.log("sending: #{command}")
     requestId = Math.floor(Math.random() * 10000000000)
     messageHandler = (event) ->
       if event.data.goldDiggerResponse && event.data.goldDiggerRequestId == requestId
         window.removeEventListener 'message', messageHandler
-        responseCallback event.data.goldDiggerResponse
+        if event.data.goldDiggerResponse.goldDiggerError
+          errorCb event.data.goldDiggerResponse.goldDiggerError
+        else  
+          responseCb event.data.goldDiggerResponse
     window.addEventListener 'message', messageHandler
     window.postMessage {goldDiggerRequest: {command: command, args: args}, goldDiggerRequestId: requestId}, "*"
 
@@ -17,27 +21,24 @@
     timeout = setTimeout ->
       resultCb false
     , PLUGIN_CHECK_TIMEOUT
-    GoldDigger.sendCommand "ping", null, (result) ->
+    GoldDigger.sendCommand "ping", {}, (result) ->
       clearTimeout timeout
       resultCb if result == "pong" then true else false
 
-  @createScraper: (url, scraperCb) ->
+  @createScraper: (url, errorCb, scraperCb) ->
     GoldDigger.sendCommand "createScraper", {url: url}, (pageId) ->
-      scraperCb(new GoldDiggerScraper(pageId))
+      scraperCb(new GoldDiggerScraper(pageId, errorCb))
 
 @GoldDiggerScraper = class GoldDiggerScraper
   WAIT_TIMEOUT = 3000
   WAIT_CHECK_INTERVAL = 500
   MAX_WAIT_CHECKS = 5
   
-  constructor: (@goldDiggerPageId) ->
+  constructor: (@goldDiggerPageId, @failedCb) ->
 
-  exec: (code, resultCb) ->
-    GoldDigger.sendCommand "exec", {pageId: @goldDiggerPageId, code: code}, resultCb
-
-  doesSelectorExist: (selector, resultCb) ->
-    this.exec "document.querySelector('#{selector}') != null", (result) ->
-      resultCb(result)
+  sendCommand: (command, args, resultCb) ->
+    args.pageId = @goldDiggerPageId
+    GoldDigger.sendCommand command, args, resultCb, @failedCb
 
   waitFor: (selector, successCb) ->
     this.waitForAny [selector], successCb
@@ -58,21 +59,21 @@
         else
           this.waitForAny selectors, successCb, originalSelectors, triesLeft
 
+  doesSelectorExist: (selector, resultCb) ->
+    this.sendCommand "doesSelectorExist", {selector: selector}, resultCb
+
   setChecked: (selector, trueFalse, doneCb) ->
-    this.exec "document.querySelector('#{selector}').checked = #{trueFalse}", ->
-      doneCb()
+    this.sendCommand "setChecked", {selector: selector, trueFalse: trueFalse}, doneCb
 
   setValue: (selector, value, doneCb) ->
-    this.exec "document.querySelector('#{selector}').value = \"#{value}\"", ->
-      doneCb()
+    this.sendCommand "setValue", {selector: selector, value: value}, doneCb
 
   click: (selector, doneCb) ->
-    this.exec "document.querySelector('#{selector}').click()", ->
-      doneCb()
+    this.sendCommand "click", {selector: selector}, doneCb
 
   getDOM: (selector, resultCb) ->
-    this.exec "document.querySelector('#{selector}').innerHTML", (elementHTML) ->
+    this.sendCommand "getDOM", {selector: selector}, (elementHTML) ->
       doc = document.implementation.createHTMLDocument ""
       docElem = doc.documentElement
       docElem.innerHTML = elementHTML
-      resultCb(docElem)
+      resultCb docElem
