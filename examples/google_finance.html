@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <meta name='uses-gold-digger' content />
+    <script src='../client/gold_digger.js'></script>
+    <script>
+      function go() {
+        goldDigger = GoldDigger.createScraper("http://www.google.com/finance?q=GOOG", failed, null, function (scraper) {
+          scraper.waitFor("#price-panel span", function () {
+            scraper.getDOM("#price-panel span", function (dom) {
+              alert("The current live GOOG stock value is: " + dom.innerText.trim());
+            })
+          })
+        });
+      }
+      
+      function failed(reason) {
+        alert("Failed: " + reason)
+      }
+    </script>
+  </head>
+  <body>
+    <button onclick='go();'>Click me for GOOG!</button>
+  </body>
+</html>

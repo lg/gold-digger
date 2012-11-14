@@ -25,7 +25,7 @@ class @GoldDigger
       clearTimeout timeout
       resultCb if result == "pong" then true else false
 
-  @createScraper: (url, errorCb, commonResultCb, scraperCb) ->
+  @createScraper: (url, errorCb, commonResultCb=(->), scraperCb) ->
     GoldDigger.sendCommand "createScraper", {url: url}, (pageId) ->
       scraperCb(new GoldDiggerScraper(pageId, errorCb, commonResultCb))
     , errorCb
