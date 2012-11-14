@@ -2,7 +2,7 @@
   "name": "Gold Digger",
   "version": "0.1",
   "manifest_version": 2,
-  "description": "Gold Digger",
+  "description": "Allow websites which you approve to read and write to other websites. NOTE: REQUIRES INCOGNITO PERMISSIONS (to protect your cookies from being accessed)",
   
   "background": {
     "page": "background.html"
