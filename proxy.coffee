@@ -1,9 +1,14 @@
-# This code is executed by the Background Page into any webpage that
-# requires GoldDigger abilities. It provides a proxy between that webpage
-# and the Background Page (which then connects requests to individual tabs
-# for scraping purposes)
+# This code is executed by the Background Page into every single page that
+# Chrome loads. This needs to be done because there is no other way to detect
+# if the page wishes to have GoldDigger abilities. Chrome is pretty fast these
+# days and hopefully this extra javascript execution isn't noticeable.
+#
+# In order for the full communication injection to happen, the webpage needs
+# the following meta tag present:
+#   <meta name="uses-gold-digger" content />
 
-window.addEventListener 'message', (event) ->
-  if event.data.goldDiggerRequest
-    chrome.extension.sendMessage event.data.goldDiggerRequest, (response) ->
-      window.postMessage {goldDiggerResponse: response, goldDiggerRequestId: event.data.goldDiggerRequestId}, "*"
+if document.head && !!document.head.querySelector("meta[name='uses-gold-digger']")
+  window.addEventListener 'message', (event) ->
+    if event.data.goldDiggerRequest
+      chrome.extension.sendMessage event.data.goldDiggerRequest, (response) ->
+        window.postMessage {goldDiggerResponse: response, goldDiggerRequestId: event.data.goldDiggerRequestId}, "*"

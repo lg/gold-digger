@@ -28,6 +28,7 @@ class @GoldDigger
   @createScraper: (url, errorCb, commonResultCb, scraperCb) ->
     GoldDigger.sendCommand "createScraper", {url: url}, (pageId) ->
       scraperCb(new GoldDiggerScraper(pageId, errorCb, commonResultCb))
+    , errorCb
 
 class @GoldDiggerScraper
   WAIT_TIMEOUT = 3000
@@ -92,10 +93,10 @@ class @AsyncStep
     nextStep = @steps.shift()
     nextStep passOn
   
-  success: (passOn) ->
+  success: (passOn) =>
     @successCb passOn
     @steps = []
   
-  fail: (passOn) ->
+  fail: (passOn) =>
     @failedCb passOn
     @steps = []
