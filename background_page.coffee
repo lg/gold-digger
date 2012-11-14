@@ -31,7 +31,11 @@ chrome.extension.onMessage.addListener (request, sender, sendResponse) ->
       return true
     
     goldDigger.createScraper request.args.url, (result) ->
-      sendResponse result
+      if result
+        sendResponse result
+      else
+        sendResponse {goldDiggerError: "GoldDigger is not enabled in Incognito"}
+      
     return true
   
   # try to execute all other commands

@@ -5,11 +5,29 @@
 @ChromeGoldDigger = class ChromeGoldDigger
   SCRIPT_EXECUTION_TIMEOUT = 3000
   
-  constructor = ->
+  constructor: () ->
+    @incognitoWindow = null
     
   createScraper: (url, identifierCb) ->
-    chrome.tabs.create {url: url, selected: false}, (tab) ->
-      identifierCb tab.id
+    if @incognitoWindow == null
+      chrome.windows.getCurrent null, (currentWindow) =>
+        chrome.windows.create {url: url, focused: false, incognito: true}, (window) =>
+          if !window
+            identifierCb null
+          else
+            @incognitoWindow = window.id
+
+            # bring back to focus
+            chrome.windows.update currentWindow.id, {focused: true}, =>
+              identifierCb window.tabs[0].id
+    else
+      chrome.windows.get @incognitoWindow, (checkWindow) =>
+        if !checkWindow?
+          @incognitoWindow = null
+          return this.createScraper url, identifierCb
+        else
+          chrome.tabs.create {url: url, windowId: @incognitoWindow}, (tab) =>
+            identifierCb tab.id      
 
   exec: (identifier, code, resultCb) ->
     identifier = parseInt(identifier)
